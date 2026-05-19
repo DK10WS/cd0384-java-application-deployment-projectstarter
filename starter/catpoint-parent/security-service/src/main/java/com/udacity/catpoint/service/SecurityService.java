@@ -6,7 +6,7 @@ import com.udacity.catpoint.data.ArmingStatus;
 import com.udacity.catpoint.data.SecurityRepository;
 import com.udacity.catpoint.data.Sensor;
 import com.udacity.catpoint.data.Sensor;
-import com.udacity.catpoint.service.ImageService;
+import com.udacity.catpoint.image.ImageService;
 import java.awt.image.BufferedImage;
 import java.awt.image.BufferedImage;
 import java.util.HashSet;

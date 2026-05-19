@@ -13,9 +13,11 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
+
     <artifactId>security-service</artifactId>
 
     <dependencies>
+
 
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -60,6 +62,7 @@
             <artifactId>image-service</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
+
 
     </dependencies>
 
