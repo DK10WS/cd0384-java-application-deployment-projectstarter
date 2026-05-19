@@ -98,6 +98,12 @@
       <plugins>
         <!-- clean lifecycle, see https://maven.apache.org/ref/current/maven-core/lifecycles.html#clean_Lifecycle -->
         <plugin>
+            <groupId>com.github.spotbugs</groupId>
+            <artifactId>spotbugs-maven-plugin</artifactId>
+            <version>4.8.3.1</version>
+        </plugin>
+
+        <plugin>
           <artifactId>maven-clean-plugin</artifactId>
           <version>3.1.0</version>
         </plugin>
@@ -138,4 +144,15 @@
       </plugins>
     </pluginManagement>
   </build>
+
+  <reporting>
+      <plugins>
+          <plugin>
+              <groupId>com.github.spotbugs</groupId>
+              <artifactId>spotbugs-maven-plugin</artifactId>
+              <version>4.8.3.1</version>
+          </plugin>
+      </plugins>
+  </reporting>
+
 </project>
