@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.Mockito.*;
 
+import com.udacity.catpoint.application.StatusListener;
 import com.udacity.catpoint.data.AlarmStatus;
 import com.udacity.catpoint.data.ArmingStatus;
 import com.udacity.catpoint.data.SecurityRepository;
@@ -207,5 +208,83 @@ public class AppTest {
         securityService.setArmingStatus(status);
 
         assertFalse(sensor.getActive());
+    }
+
+    @Test
+    void armedHomeWithExistingCatShouldTriggerAlarm() {
+        when(imageService.imageContainsCat(any(), anyFloat())).thenReturn(true);
+
+        securityService.processImage(null);
+
+        securityService.setArmingStatus(ArmingStatus.ARMED_HOME);
+
+        verify(securityRepository).setAlarmStatus(AlarmStatus.ALARM);
+    }
+
+    @Test
+    void noCatAndNoActiveSensorsShouldSetNoAlarm() {
+        Sensor sensor = new Sensor("Window", SensorType.WINDOW);
+
+        sensor.setActive(false);
+
+        when(imageService.imageContainsCat(any(), anyFloat())).thenReturn(
+            false
+        );
+
+        when(securityRepository.getSensors()).thenReturn(
+            java.util.Set.of(sensor)
+        );
+
+        securityService.processImage(null);
+
+        verify(securityRepository).setAlarmStatus(AlarmStatus.NO_ALARM);
+    }
+
+    @Test
+    void noCatButActiveSensorShouldNotResetAlarm() {
+        Sensor sensor = new Sensor("Door", SensorType.DOOR);
+
+        sensor.setActive(true);
+
+        when(imageService.imageContainsCat(any(), anyFloat())).thenReturn(
+            false
+        );
+
+        when(securityRepository.getSensors()).thenReturn(
+            java.util.Set.of(sensor)
+        );
+
+        securityService.processImage(null);
+
+        verify(securityRepository, never()).setAlarmStatus(
+            AlarmStatus.NO_ALARM
+        );
+    }
+
+    @Test
+    void catDetectedWhileDisarmedShouldNotTriggerAlarm() {
+        when(securityRepository.getArmingStatus()).thenReturn(
+            ArmingStatus.DISARMED
+        );
+
+        when(imageService.imageContainsCat(any(), anyFloat())).thenReturn(true);
+
+        securityService.processImage(null);
+
+        verify(securityRepository, never()).setAlarmStatus(AlarmStatus.ALARM);
+    }
+
+    //SInce these are not needed to be tested
+    @Test
+    void removeStatusListenerShouldStopNotifications() {
+        StatusListener listener = mock(StatusListener.class);
+
+        securityService.addStatusListener(listener);
+
+        securityService.removeStatusListener(listener);
+
+        securityService.setAlarmStatus(AlarmStatus.ALARM);
+
+        verify(listener, never()).notify(any());
     }
 }

@@ -39,31 +39,31 @@ public class SecurityService {
      * may update both the alarm status.
      * @param armingStatus
      */
-    public void setArmingStatus(ArmingStatus status) {
-        if (status == ArmingStatus.DISARMED) {
+    public void setArmingStatus(ArmingStatus armingStatus) {
+        if (armingStatus == ArmingStatus.DISARMED) {
             setAlarmStatus(AlarmStatus.NO_ALARM);
 
             securityRepository
                 .getSensors()
                 .forEach(sensor -> sensor.setActive(false));
 
-            securityRepository.setArmingStatus(status);
+            securityRepository.setArmingStatus(armingStatus);
 
             return;
         }
 
         if (
-            status == ArmingStatus.ARMED_HOME ||
-            status == ArmingStatus.ARMED_AWAY
+            armingStatus == ArmingStatus.ARMED_HOME ||
+            armingStatus == ArmingStatus.ARMED_AWAY
         ) {
             securityRepository
                 .getSensors()
                 .forEach(sensor -> sensor.setActive(false));
         }
 
-        securityRepository.setArmingStatus(status);
+        securityRepository.setArmingStatus(armingStatus);
 
-        if (status == ArmingStatus.ARMED_HOME && catDetected) {
+        if (armingStatus == ArmingStatus.ARMED_HOME && catDetected) {
             setAlarmStatus(AlarmStatus.ALARM);
         }
     }
