@@ -4,15 +4,14 @@ import com.udacity.catpoint.data.Sensor;
 import com.udacity.catpoint.data.SensorType;
 import com.udacity.catpoint.service.SecurityService;
 import com.udacity.catpoint.service.StyleService;
-import net.miginfocom.swing.MigLayout;
-
 import javax.swing.*;
+import net.miginfocom.swing.MigLayout;
 
 /**
  * Panel that allows users to add sensors to their system. Sensors may be
  * manually set to "active" and "inactive" to test the system.
  */
-public class SensorPanel extends JPanel {
+public class SensorPanel extends JPanel implements StatusListener {
 
     private SecurityService securityService;
 
@@ -20,7 +19,9 @@ public class SensorPanel extends JPanel {
     private JLabel newSensorName = new JLabel("Name:");
     private JLabel newSensorType = new JLabel("Sensor Type:");
     private JTextField newSensorNameField = new JTextField();
-    private JComboBox newSensorTypeDropdown = new JComboBox(SensorType.values());
+    private JComboBox newSensorTypeDropdown = new JComboBox(
+        SensorType.values()
+    );
     private JButton addNewSensorButton = new JButton("Add New Sensor");
 
     private JPanel sensorListPanel;
@@ -30,11 +31,19 @@ public class SensorPanel extends JPanel {
         super();
         setLayout(new MigLayout());
         this.securityService = securityService;
+        securityService.addStatusListener(this);
 
         panelLabel.setFont(StyleService.HEADING_FONT);
         addNewSensorButton.addActionListener(e ->
-                addSensor(new Sensor(newSensorNameField.getText(),
-                        SensorType.valueOf(newSensorTypeDropdown.getSelectedItem().toString()))));
+            addSensor(
+                new Sensor(
+                    newSensorNameField.getText(),
+                    SensorType.valueOf(
+                        newSensorTypeDropdown.getSelectedItem().toString()
+                    )
+                )
+            )
+        );
 
         newSensorPanel = buildAddSensorPanel();
         sensorListPanel = new JPanel();
@@ -68,19 +77,34 @@ public class SensorPanel extends JPanel {
      */
     private void updateSensorList(JPanel p) {
         p.removeAll();
-        securityService.getSensors().stream().sorted().forEach(s -> {
-            JLabel sensorLabel = new JLabel(String.format("%s(%s): %s", s.getName(),  s.getSensorType().toString(),(s.getActive() ? "Active" : "Inactive")));
-            JButton sensorToggleButton = new JButton((s.getActive() ? "Deactivate" : "Activate"));
-            JButton sensorRemoveButton = new JButton("Remove Sensor");
+        securityService
+            .getSensors()
+            .stream()
+            .sorted()
+            .forEach(s -> {
+                JLabel sensorLabel = new JLabel(
+                    String.format(
+                        "%s(%s): %s",
+                        s.getName(),
+                        s.getSensorType().toString(),
+                        (s.getActive() ? "Active" : "Inactive")
+                    )
+                );
+                JButton sensorToggleButton = new JButton(
+                    (s.getActive() ? "Deactivate" : "Activate")
+                );
+                JButton sensorRemoveButton = new JButton("Remove Sensor");
 
-            sensorToggleButton.addActionListener(e -> setSensorActivity(s, !s.getActive()) );
-            sensorRemoveButton.addActionListener(e -> removeSensor(s));
+                sensorToggleButton.addActionListener(e ->
+                    setSensorActivity(s, !s.getActive())
+                );
+                sensorRemoveButton.addActionListener(e -> removeSensor(s));
 
-            //hard code some sizes, tsk tsk
-            p.add(sensorLabel, "width 300:300:300");
-            p.add(sensorToggleButton, "width 100:100:100");
-            p.add(sensorRemoveButton, "wrap");
-        });
+                //hard code some sizes, tsk tsk
+                p.add(sensorLabel, "width 300:300:300");
+                p.add(sensorToggleButton, "width 100:100:100");
+                p.add(sensorRemoveButton, "wrap");
+            });
 
         repaint();
         revalidate();
@@ -101,11 +125,14 @@ public class SensorPanel extends JPanel {
      * @param sensor The sensor to add
      */
     private void addSensor(Sensor sensor) {
-        if(securityService.getSensors().size() < 4) {
+        if (securityService.getSensors().size() < 4) {
             securityService.addSensor(sensor);
             updateSensorList(sensorListPanel);
         } else {
-            JOptionPane.showMessageDialog(null, "To add more than 4 sensors, please subscribe to our Premium Membership!");
+            JOptionPane.showMessageDialog(
+                null,
+                "To add more than 4 sensors, please subscribe to our Premium Membership!"
+            );
         }
     }
 
@@ -115,6 +142,21 @@ public class SensorPanel extends JPanel {
      */
     private void removeSensor(Sensor sensor) {
         securityService.removeSensor(sensor);
+        updateSensorList(sensorListPanel);
+    }
+
+    @Override
+    public void notify(com.udacity.catpoint.data.AlarmStatus status) {
+        updateSensorList(sensorListPanel);
+    }
+
+    @Override
+    public void catDetected(boolean catDetected) {
+        // no behavior needed
+    }
+
+    @Override
+    public void sensorStatusChanged() {
         updateSensorList(sensorListPanel);
     }
 }
